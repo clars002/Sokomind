@@ -1,0 +1,19 @@
+state 0:
+OOOOOO
+O AR O
+O XO O
+OO   O
+OOSa O
+OOOOOO
+fringe{0}
+seq[]
+
+north -> state 1:
+OOOOOO
+O AR O
+O XO O
+OO a O
+OOS  O
+OOOOOO
+fringe{1}
+seq[0]
