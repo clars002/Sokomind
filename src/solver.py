@@ -297,11 +297,14 @@ def main():
             new_state = shift_state(current_state, i)
             if new_state != None and new_state not in closed_set:
                 new_state_score = heuristic_function(new_state)
-                if args.algorithm in ("A*", "a*", "astar", "AStar", "A Star", "a star"):
-                    new_state_score += new_state.move_count
-                new_state.heuristic_score = new_state_score
-                closed_set.add(new_state)
-                fringe.add(new_state)
+
+                if new_state_score != -1: # For custom heuristic; -1 denotes a stuck box
+                    if args.algorithm in ("A*", "a*", "astar", "AStar", "A Star", "a star"):
+                        new_state_score += new_state.move_count
+                    new_state.heuristic_score = new_state_score
+                    fringe.add(new_state)
+                
+                closed_set.add(new_state) # Add the state to the closed list even if a box is stuck
 
         time.sleep(args.sleep_duration)
 

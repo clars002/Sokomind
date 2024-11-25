@@ -1,4 +1,59 @@
+from actor import Actor
 from state import State
+
+import actor as act
+
+def stuck_memoized(box: Actor, state: State, cache):
+    key = (box.x_position, box.y_position)
+    if key not in cache:
+        cache[key] = False
+        cache[key] = stuck(box, state, cache)
+    return cache[key]
+
+def stuck(box: Actor, state: State, cache):
+
+    # # Memoization by ChatGPT; begin ChatGPT code
+    # if visited is None:
+    #     visited = set()
+
+    # # If this box has already been processed, return False to prevent infinite recursion
+    # if box in visited:
+    #     return False
+
+    # # Mark this box as visited
+    # visited.add(box)
+    # # End ChatGPT code
+
+    box_x = box.x_position
+    box_y = box.y_position
+
+    adjacent_spaces = [None] * 4
+
+    adjacent_spaces[0] = state.mapped_actors[box_y - 1][box_x]
+    adjacent_spaces[1] = state.mapped_actors[box_y][box_x + 1]
+    adjacent_spaces[2] = state.mapped_actors[box_y + 1][box_x]
+    adjacent_spaces[3] = state.mapped_actors[box_y][box_x - 1]
+
+    is_immovable = [False] * 4
+
+    for i in range(4):
+        if adjacent_spaces[i] == None:
+            is_immovable[i] = False
+        elif adjacent_spaces[i].symbol == "O":
+            is_immovable[i] = True
+        elif act.is_box(adjacent_spaces[i]) and stuck_memoized(adjacent_spaces[i], state, cache):
+            is_immovable[i] = True
+        else:
+            is_immovable[i] = False
+
+    for i in range(3):
+        if is_immovable[i] and is_immovable[i + 1]:
+            return True
+
+    if is_immovable[3] and is_immovable[0]:
+        return True
+    
+    return False
 
 
 def manhattan_heuristic(state: State):
@@ -28,6 +83,46 @@ def manhattan_heuristic(state: State):
             if smallest_distance == -1 or sum_distance < smallest_distance:
                 smallest_distance = sum_distance
         if smallest_distance != -1:
+            total_distances_generic += smallest_distance
+
+    score = total_distances_specific + total_distances_generic
+
+    return score
+
+
+def custom_heuristic(state: State):
+    specific_boxes = state.specific_boxes
+    specific_storages = state.specific_storages
+    generic_boxes = state.generic_boxes
+    generic_storages = state.generic_storages
+
+    stuck_cache = {}
+
+    total_distances_specific = 0
+    for i in range(len(specific_boxes)):
+        y_distance = abs(specific_boxes[i].y_position - specific_storages[i].y_position)
+        x_distance = abs(specific_boxes[i].x_position - specific_storages[i].x_position)
+        distance = y_distance + x_distance
+        if distance != 0 and stuck_memoized(specific_boxes[i], state, stuck_cache):
+            return -1
+        total_distances_specific += distance
+
+    total_distances_generic = 0
+    for i in range(len(generic_boxes)):
+        smallest_distance = -1
+        for j in range(len(generic_storages)):
+            y_distance = abs(
+                generic_boxes[i].y_position - generic_storages[j].y_position
+            )
+            x_distance = abs(
+                generic_boxes[i].x_position - generic_storages[j].x_position
+            )
+            sum_distance = y_distance + x_distance
+            if smallest_distance == -1 or sum_distance < smallest_distance:
+                smallest_distance = sum_distance
+        if smallest_distance != -1:
+            if smallest_distance != 0 and stuck_memoized(generic_boxes[i], state, stuck_cache):
+                return -1
             total_distances_generic += smallest_distance
 
     score = total_distances_specific + total_distances_generic
