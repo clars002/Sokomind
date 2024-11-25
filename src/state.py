@@ -10,6 +10,7 @@ class State:
         parent=None,
         last_move=None,
         heuristic_score=0,
+        move_count=0,
     ):
         self.mapped_actors = mapped_actors
         self.robot = robot
@@ -20,6 +21,7 @@ class State:
         self.parent = parent
         self.last_move = last_move
         self.heuristic_score = heuristic_score
+        self.move_count = move_count
 
     def __str__(self) -> str:
         output = ""

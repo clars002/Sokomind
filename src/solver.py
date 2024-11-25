@@ -27,7 +27,8 @@ def shift_state(state: State, direction: int) -> State:
         specific_storages=state.specific_storages,
         generic_storages=state.generic_storages,
         parent=state,
-        last_move=direction
+        last_move=direction,
+        move_count= state.move_count
     )
 
     robot_y_position = state.robot.y_position
@@ -70,6 +71,7 @@ def move_actor(
                 return False
             elif push_block == True:
                 move_actor(state, initial_y_position, initial_x_position, direction)
+                state.move_count -= 1
                 return True
 
     previously_occupied = actor.standing_on
@@ -89,6 +91,8 @@ def move_actor(
     state.mapped_actors[initial_y_position][
         initial_x_position
     ] = previously_occupied  # Todo: Restore standing_on functionality
+
+    state.move_count += 1 # Note: Due to recursion, this will effectively make pushing a box add 2 to move count. This is intended
 
     return True
 
@@ -226,6 +230,7 @@ def print_update(start_time, process, fringe, current_state, iterations):
 
     print("Processing state:")
     print(current_state)
+    print(f"Move count: {current_state.move_count}")
     print(f"Heuristic score: {current_state.heuristic_score}")
     print(f"{iterations} states examined")
     print(f"Fringe length: {len(fringe)}")

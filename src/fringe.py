@@ -60,7 +60,7 @@ class FringeFactory:
             return BFSFringe()
         elif algorithm == "DFS":
             return DFSFringe()
-        elif algorithm in ("GBFS", "A*"):
+        elif algorithm in ("GBFS", "A*", "astar"):
             return PriorityFringe()
         else:
             raise ValueError(f"Unknown algorithm: {algorithm}")
