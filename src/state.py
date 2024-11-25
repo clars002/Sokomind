@@ -62,7 +62,7 @@ class State:
                 or box.y_position != other_box.y_position
             ):
                 return False
-            
+
         return True
 
     def __hash__(self):  # Written by ChatGPT

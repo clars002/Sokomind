@@ -17,7 +17,9 @@ directions = {0: "North", 1: "East", 2: "South", 3: "West"}
 
 
 def shift_state(state: State, direction: int) -> State:
-    new_map, new_robot, new_specific_boxes, new_generic_boxes = copy.deepcopy((state.mapped_actors, state.robot, state.specific_boxes, state.generic_boxes))
+    new_map, new_robot, new_specific_boxes, new_generic_boxes = copy.deepcopy(
+        (state.mapped_actors, state.robot, state.specific_boxes, state.generic_boxes)
+    )
 
     new_state = State(
         mapped_actors=new_map,
@@ -28,7 +30,7 @@ def shift_state(state: State, direction: int) -> State:
         generic_storages=state.generic_storages,
         parent=state,
         last_move=direction,
-        move_count= state.move_count
+        move_count=state.move_count,
     )
 
     robot_y_position = state.robot.y_position
@@ -36,7 +38,7 @@ def shift_state(state: State, direction: int) -> State:
 
     if move_actor(new_state, robot_y_position, robot_x_position, direction):
         return new_state
-    
+
     return None
 
 
@@ -92,7 +94,7 @@ def move_actor(
         initial_x_position
     ] = previously_occupied  # Todo: Restore standing_on functionality
 
-    state.move_count += 1 # Note: Due to recursion, this will effectively make pushing a box add 2 to move count. This is intended
+    state.move_count += 1  # Note: Due to recursion, this will effectively make pushing a box add 2 to move count. This is intended
 
     return True
 

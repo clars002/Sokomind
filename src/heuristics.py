@@ -66,7 +66,7 @@ def a_star_heuristic(state: State):
 
     score = total_distances_specific + total_distances_generic
 
-    score = score ** 2
+    score = score**2
 
     score += state.move_count
 
