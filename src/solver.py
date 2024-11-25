@@ -296,7 +296,10 @@ def main():
         for i in range(4):
             new_state = shift_state(current_state, i)
             if new_state != None and new_state not in closed_set:
-                new_state.heuristic_score = heuristic_function(new_state)
+                new_state_score = heuristic_function(new_state)
+                if args.algorithm in ("A*", "a*", "astar", "AStar", "A Star", "a star"):
+                    new_state_score += new_state.move_count
+                new_state.heuristic_score = new_state_score
                 closed_set.add(new_state)
                 fringe.add(new_state)
 
