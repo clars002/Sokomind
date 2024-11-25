@@ -1,3 +1,4 @@
+import argparse
 import copy
 import os
 import string
@@ -194,33 +195,51 @@ def clear_screen():  # By ChatGPT
         os.system("clear")
 
 
-def process_arguments():
-    puzzle = "puzzles/tiny.txt"
-    algorithm = "BFS"
-    heuristic = "Manhattan"
-    optimizations = True
-    print_interval = 0.2
-    sleep_duration = 0
+def process_args():
+    """
+    Parses arguments from the CLI.
 
-    argument_count = len(sys.argv)
-
-    if argument_count > 1:
-        puzzle = sys.argv[1]
-    if argument_count > 2:
-        algorithm = sys.argv[2]
-    if argument_count > 3:
-        print_interval = float(sys.argv[3])
-    if argument_count > 4:
-        sleep_duration = float(sys.argv[4])
-    if argument_count > 5:
-        heuristic = sys.argv[5]
-    if argument_count > 6:
-        optimizations = bool(sys.argv[6])
-
-    if algorithm in ("BFS", "DFS"):
-        heuristic = None
-
-    return puzzle, algorithm, print_interval, sleep_duration, heuristic, optimizations
+    Returns:
+        A Namespace object where attributes correspond to the
+        defined/provided args.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--puzzle",
+        type=str,
+        default="puzzles/tiny.txt",
+        help="Path to the puzzle input file.",
+    )
+    parser.add_argument(
+        "--algorithm",
+        type=str,
+        default="BFS",
+        help="Search algorithm to employ.",
+    )
+    parser.add_argument(
+        "--heuristic",
+        type=str,
+        default="Manhattan",
+        help="State prioritization heuristic (used in GBFS and A* only)",
+    )
+    parser.add_argument(  # Can't remember what I intended this for; currently doesn't do anything
+        "--optimizations",
+        action="store_true",
+        help="Currently doesn't do anything (TBD).",
+    )
+    parser.add_argument(
+        "--print_interval",
+        type=float,
+        default=0.2,
+        help="Number of seconds between outputs to the terminal; saves performance.",
+    )
+    parser.add_argument(
+        "--sleep_duration",
+        type=float,
+        default=0,
+        help="Number of seconds to sleep between each explored state; a throttle to reduce system load.",
+    )
+    return parser.parse_args()
 
 
 def print_update(start_time, process, fringe, current_state, iterations):
@@ -240,26 +259,17 @@ def print_update(start_time, process, fringe, current_state, iterations):
     print(f"Memory usage: {memory_usage_mb:.2f} MB")
 
 
-# def fringe_pop(fringe: deque, algorithm: string = "BFS") -> State:
-#     if algorithm in ("DFS"):
-#         return fringe.pop()
-#     else:
-#         return fringe.popleft()
-
-
 def main():
     start_time = time.time()
     process = psutil.Process(os.getpid())  # ChatGPT
 
-    puzzle, algorithm, print_interval, sleep_duration, heuristic, optimizations = (
-        process_arguments()
-    )
+    args = process_args()
 
-    start_state = initialize_puzzle(puzzle)
-    fringe = fr.FringeFactory.create_fringe(algorithm)
+    start_state = initialize_puzzle(args.puzzle)
+    fringe = fr.FringeFactory.create_fringe(args.algorithm)
     closed_set = set()
 
-    heuristic_function = heur.HeuristicFactory.create_heuristic(heuristic)
+    heuristic_function = heur.HeuristicFactory.create_heuristic(args.heuristic)
 
     fringe.add(start_state)
 
@@ -270,7 +280,7 @@ def main():
 
     while solved == False and fringe:
 
-        print_now = time.time() - print_time >= print_interval
+        print_now = time.time() - print_time >= args.print_interval
 
         current_state = fringe.pop()
         closed_set.add(current_state)
@@ -290,7 +300,7 @@ def main():
                 closed_set.add(new_state)
                 fringe.add(new_state)
 
-        time.sleep(sleep_duration)
+        time.sleep(args.sleep_duration)
 
     if solved == True:
         print("A solution has been found!\n")
