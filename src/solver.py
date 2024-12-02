@@ -1,3 +1,7 @@
+"""
+Contains the main driving logic as well as the search algorithm itself.
+"""
+
 import argparse
 import copy
 import os
@@ -18,10 +22,17 @@ directions = {0: "North", 1: "East", 2: "South", 3: "West"}
 
 
 def shift_state(state: State, direction: int) -> State:
+    """
+    Given a state and movement direction, returns the state that
+    results from moving the robot in that direction. If the move is
+    impossible, return None.
+    """
+
+    # Deep copy only the state attributes that can vary between states
     new_map, new_robot, new_specific_boxes, new_generic_boxes = copy.deepcopy(
         (state.mapped_actors, state.robot, state.specific_boxes, state.generic_boxes)
     )
-
+    # Static parts of the puzzle are shared between parent & child.
     new_state = State(
         mapped_actors=new_map,
         robot=new_robot,
@@ -46,6 +57,11 @@ def shift_state(state: State, direction: int) -> State:
 def move_actor(
     state: State, initial_y_position: int, initial_x_position: int, direction: int
 ) -> bool:
+    """
+    Modifies a state by moving an object in the supplied direction from
+    its initial position; contains the actual movement logic, and
+    mutates the state supplied in the parameters.
+    """
     x_offset = 0
     y_offset = 0
     if direction == 0:  # 0 => north
@@ -57,50 +73,64 @@ def move_actor(
     elif direction == 3:  # 3 => west
         x_offset = -1
 
+    # Retrieve the actor that is to be moved
     actor = state.mapped_actors[initial_y_position][initial_x_position]
 
+    # Retrieve the actor in the destination space, if applicable
     destination = state.mapped_actors[initial_y_position + y_offset][
         initial_x_position + x_offset
     ]
 
     if destination != None:
+        # Check for being blocked by a wall or a box being blocked by another box
         if destination.symbol == "O" or (act.is_box(actor) and act.is_box(destination)):
             return False
+        # Handle the case where the robot is attempting to push a box
         elif actor.symbol == "R" and act.is_box(destination):
+            # Recursive call in order to try to move the box itself
             push_block = move_actor(
                 state, destination.y_position, destination.x_position, direction
             )
+            # If the box fails to move, so does the robot
             if push_block == False:
                 return False
+            # If the box has successfully moved, the robot moves
             elif push_block == True:
                 move_actor(state, initial_y_position, initial_x_position, direction)
                 state.move_count -= 1
                 return True
 
+    # If applicable, record the storage the actor was standing on
+    # before moving
     previously_occupied = actor.standing_on
-
+    # Update standing_on to reflect the storage (if applicable) the
+    # actor is moving onto
     if destination is not None and act.is_storage(destination):
         actor.standing_on = destination
     else:
         actor.standing_on = None
 
+    # Update the actor's position
     actor.x_position += x_offset
     actor.y_position += y_offset
-
+    # Move the actor on the moved_actors 2D array
     state.mapped_actors[initial_y_position + y_offset][
         initial_x_position + x_offset
     ] = actor
-
+    # If applicable, restore previously-covered storage
     state.mapped_actors[initial_y_position][
         initial_x_position
-    ] = previously_occupied  # Todo: Restore standing_on functionality
+    ] = previously_occupied
 
-    state.move_count += 1  # Note: Due to recursion, this will effectively make pushing a box add 2 to move count. This is intended
+    state.move_count += 1
 
     return True
 
 
 def recover_solution_path(solution_state):  # Written by ChatGPT
+    """
+    Given a solved state, return the path used to get there.
+    """
     path = []
     current_state = solution_state
     while current_state is not None:
@@ -112,6 +142,9 @@ def recover_solution_path(solution_state):  # Written by ChatGPT
 
 
 def print_solution(solution_path):
+    """
+    Print the solution path step-by-step with 2D grid visualization.
+    """
     step_count = 0
     print("Solution path:\n---------------------------------")
     for state in solution_path:
@@ -133,6 +166,9 @@ def print_solution(solution_path):
 
 
 def initialize_puzzle(filepath: string = "puzzles/mini.txt"):
+    """
+    Read in a puzzle from a file and generate the initial state from it.
+    """
     # https://www.programiz.com/python-programming/examples/read-line-by-line
     with open(filepath) as puzzle:
         map = puzzle.readlines()
@@ -150,6 +186,9 @@ def initialize_puzzle(filepath: string = "puzzles/mini.txt"):
 
     mapped_actors = [[None for column in range(map_width)] for row in range(map_height)]
 
+    # Read each part of the map one-by-one and add to mapped_actors,
+    # generic_storages, generic_boxes, specific_boxes, and
+    # specific_storages, respectively.
     for i in range(map_height):
         for j in range(map_width):
             current_tile = map_rows[i][j]
@@ -169,6 +208,7 @@ def initialize_puzzle(filepath: string = "puzzles/mini.txt"):
                         specific_storages[ord(current_tile)] = new_actor
             mapped_actors[i][j] = new_actor
 
+    # Exclude None from boxes/storages
     specific_boxes = [actor for actor in specific_boxes if actor is not None]
     specific_storages = [
         receptacle for receptacle in specific_storages if receptacle is not None
@@ -243,6 +283,9 @@ def process_args():
 
 
 def print_update(start_time, process, fringe, current_state, iterations):
+    """
+    Print a progress update to the screen with various statistics.
+    """
     clear_screen()
 
     elapsed = time.time() - start_time
@@ -260,6 +303,10 @@ def print_update(start_time, process, fringe, current_state, iterations):
 
 
 def main():
+    """
+    Main driver; takes in user input via CLI args, executes the search,
+    and prints the results.
+    """
     start_time = time.time()
     process = psutil.Process(os.getpid())  # ChatGPT
 

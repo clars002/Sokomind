@@ -1,3 +1,7 @@
+"""
+Defines the State class and its methods.
+"""
+
 class State:
     def __init__(
         self,
@@ -12,15 +16,22 @@ class State:
         heuristic_score=0,
         move_count=0,
     ):
+        # A 2D array mapping the actors out on the board
         self.mapped_actors = mapped_actors
+        # The robot (an Actor object)
         self.robot = robot
+        # 1D lists for each type of box and storage
         self.specific_boxes = specific_boxes
         self.generic_boxes = generic_boxes
         self.specific_storages = specific_storages
         self.generic_storages = generic_storages
+        # Parent state
         self.parent = parent
+        # The previous move used to get to this state from the parent
         self.last_move = last_move
+        # Heuristic score evaluation
         self.heuristic_score = heuristic_score
+        # Number of moves used thus far to get to this state
         self.move_count = move_count
 
     def __str__(self) -> str:
@@ -76,6 +87,10 @@ class State:
         )
 
     def is_goal(self):
+        """
+        Check if this is the goal state; if any box is not in its
+        storage, it is not, otherwise, it is.
+        """
         solved = True
         for i in range(len(self.specific_boxes)):
             box = self.specific_boxes[i]

@@ -1,3 +1,8 @@
+"""
+Defines the Fringe interface and Fringe classes. Uses the factory
+design pattern to enable runtime polymorphism
+"""
+
 import heapq
 import string
 from collections import deque
@@ -5,8 +10,11 @@ from collections import deque
 from state import State
 
 
-# Used ChatGPT to help me understand how to apply polymorphism
+# ChatGPT helped me recall the factory paradigm, but I wrote the code.
 class Fringe:
+    """
+    Abstract base class that defines the Fringe interface.
+    """
     def __bool__(self):
         return bool(self.contents)
 
@@ -21,6 +29,9 @@ class Fringe:
 
 
 class BFSFringe(Fringe):
+    """
+    Fringe for BFS
+    """
     def __init__(self):
         self.contents = deque()
 
@@ -32,6 +43,9 @@ class BFSFringe(Fringe):
 
 
 class DFSFringe(Fringe):
+    """
+    Fringe for DFS
+    """
     def __init__(self):
         self.contents = deque()
 
@@ -43,6 +57,9 @@ class DFSFringe(Fringe):
 
 
 class PriorityFringe(Fringe):
+    """
+    Fringe for GBFS or A*
+    """
     def __init__(self):
         self.contents = []
 
@@ -54,6 +71,9 @@ class PriorityFringe(Fringe):
 
 
 class FringeFactory:
+    """
+    Factory to enable runtime polymorphism with respect to Fringe
+    """
     @staticmethod
     def create_fringe(algorithm: str = "BFS"):
         if algorithm == "BFS":
@@ -64,34 +84,3 @@ class FringeFactory:
             return PriorityFringe()
         else:
             raise ValueError(f"Unknown algorithm: {algorithm}")
-
-
-# class Fringe:
-#     def __init__(self, algorithm: string = "BFS"):
-#         self.algorithm = algorithm
-#         self.contents = deque()
-#         self.type = 0
-
-#         if algorithm in ("GBFS", "A*"):
-#             self.type = 1
-#             self.contents = []
-
-#     def __bool__(self):
-#         return bool(self.contents)
-
-#     def __len__(self):
-#         return len(self.contents)
-
-#     def add(self, node: State):
-#         if self.type == 0:
-#             self.contents.append(node)
-#         else:
-#             heapq.heappush(self.contents, node)
-
-#     def pop(self) -> State:
-#         if self.algorithm == "BFS":
-#             return self.contents.popleft()
-#         elif self.algorithm == "DFS":
-#             return self.contents.pop()
-#         else:
-#             return heapq.heappop(self.contents)
