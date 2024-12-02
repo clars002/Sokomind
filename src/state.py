@@ -2,6 +2,7 @@
 Defines the State class and its methods.
 """
 
+
 class State:
     def __init__(
         self,

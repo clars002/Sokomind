@@ -15,6 +15,7 @@ class Fringe:
     """
     Abstract base class that defines the Fringe interface.
     """
+
     def __bool__(self):
         return bool(self.contents)
 
@@ -32,6 +33,7 @@ class BFSFringe(Fringe):
     """
     Fringe for BFS
     """
+
     def __init__(self):
         self.contents = deque()
 
@@ -46,6 +48,7 @@ class DFSFringe(Fringe):
     """
     Fringe for DFS
     """
+
     def __init__(self):
         self.contents = deque()
 
@@ -60,6 +63,7 @@ class PriorityFringe(Fringe):
     """
     Fringe for GBFS or A*
     """
+
     def __init__(self):
         self.contents = []
 
@@ -74,6 +78,7 @@ class FringeFactory:
     """
     Factory to enable runtime polymorphism with respect to Fringe
     """
+
     @staticmethod
     def create_fringe(algorithm: str = "BFS"):
         if algorithm == "BFS":

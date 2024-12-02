@@ -118,9 +118,7 @@ def move_actor(
         initial_x_position + x_offset
     ] = actor
     # If applicable, restore previously-covered storage
-    state.mapped_actors[initial_y_position][
-        initial_x_position
-    ] = previously_occupied
+    state.mapped_actors[initial_y_position][initial_x_position] = previously_occupied
 
     state.move_count += 1
 
@@ -345,13 +343,24 @@ def main():
             if new_state != None and new_state not in closed_set:
                 new_state_score = heuristic_function(new_state)
 
-                if new_state_score != -1: # For custom heuristic; -1 denotes a stuck box
-                    if args.algorithm in ("A*", "a*", "astar", "AStar", "A Star", "a star"):
+                if (
+                    new_state_score != -1
+                ):  # For custom heuristic; -1 denotes a stuck box
+                    if args.algorithm in (
+                        "A*",
+                        "a*",
+                        "astar",
+                        "AStar",
+                        "A Star",
+                        "a star",
+                    ):
                         new_state_score += new_state.move_count
                     new_state.heuristic_score = new_state_score
                     fringe.add(new_state)
-                
-                closed_set.add(new_state) # Add the state to the closed list even if a box is stuck
+
+                closed_set.add(
+                    new_state
+                )  # Add the state to the closed list even if a box is stuck
 
         time.sleep(args.sleep_duration)
 

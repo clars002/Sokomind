@@ -2,12 +2,12 @@
 Contains heuristic functions and related.
 """
 
+import actor as act
 from actor import Actor
 from state import State
 
-import actor as act
 
-def stuck_memoized(box: Actor, state: State, cache): # Written by ChatGPT
+def stuck_memoized(box: Actor, state: State, cache):  # Written by ChatGPT
     """
     Memoization layer for stuck() in order to store actors that have
     already been checked.
@@ -17,6 +17,7 @@ def stuck_memoized(box: Actor, state: State, cache): # Written by ChatGPT
         cache[key] = False
         cache[key] = stuck(box, state, cache)
     return cache[key]
+
 
 def stuck(box: Actor, state: State, cache):
     """
@@ -42,7 +43,9 @@ def stuck(box: Actor, state: State, cache):
             is_immovable[i] = False
         elif adjacent_spaces[i].symbol == "O":
             is_immovable[i] = True
-        elif act.is_box(adjacent_spaces[i]) and stuck_memoized(adjacent_spaces[i], state, cache):
+        elif act.is_box(adjacent_spaces[i]) and stuck_memoized(
+            adjacent_spaces[i], state, cache
+        ):
             is_immovable[i] = True
         else:
             is_immovable[i] = False
@@ -54,7 +57,7 @@ def stuck(box: Actor, state: State, cache):
     # Wrap back around since 3 (west) is adjacent to 0 (north)
     if is_immovable[3] and is_immovable[0]:
         return True
-    
+
     return False
 
 
@@ -134,7 +137,9 @@ def custom_heuristic(state: State):
                 smallest_distance = sum_distance
         if smallest_distance != -1:
             # If the box is not in its storage, check if it's stuck.
-            if smallest_distance != 0 and stuck_memoized(generic_boxes[i], state, stuck_cache):
+            if smallest_distance != 0 and stuck_memoized(
+                generic_boxes[i], state, stuck_cache
+            ):
                 return -1
             total_distances_generic += smallest_distance
 
@@ -151,6 +156,7 @@ class HeuristicFactory:
     """
     Factory to enable runtime polymorphism with respect to Heuristic
     """
+
     @staticmethod
     def create_heuristic(heuristic: str = None):
         if heuristic is not None:
